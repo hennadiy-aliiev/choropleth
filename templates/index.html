@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+    </head>
+        <meta charset="utf-8">
+        <meta name="author" content="Hennadii Aliiev">
+        <title>Choropleth</title>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.5.3/d3.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/topojson/1.6.9/topojson.min.js"></script>
+		<script src="/static/datamaps.world.hires.js"></script>  
+  	</head>
+  	<body>
+		<div id="container_map" style="margin: auto; width: 1200px; height: 900px; position: relative;"></div>
+		<script>
+
+	    var series = {{ countries_invest|tojson }}
+
+	    var dataset = {};
+
+	    var onlyValues = series.map(function(obj){ return obj[1]; });
+	    var minValue = Math.min.apply(null, onlyValues),
+	        maxValue = Math.max.apply(null, onlyValues);
+
+	    var paletteScale = d3.scale.linear()
+	            .domain([minValue,maxValue])
+	            .range(["#ffe6e6","#800000"]);
+
+	    series.forEach(function(item){ //
+
+	        var iso = item[0],
+	        	value = item[1];
+	        dataset[iso] = { total: value, fillColor: paletteScale(value) };
+	    });
+
+	    new Datamap({
+	       	element: document.getElementById('container_map'),
+	        projection: 'mercator',
+
+	        fills: { defaultFill: '#F5F5F5' },
+	        data: dataset,
+	        geographyConfig: {
+	            borderColor: '#DEDEDE',
+	            highlightBorderWidth: 2,
+
+	            highlightFillColor: function(geo) {
+	                return geo['fillColor'] || '#F5F5F5';
+	            },
+
+	            highlightBorderColor: '#B7B7B7',
+
+	            popupTemplate: function(geo, data) {
+
+	                if (!data) { return ; }
+
+	                return ['<div class="hoverinfo">',
+	                    '<strong>', geo.properties.name, '</strong>',
+	                    '<br>Total investments: ', data.total.toLocaleString(),
+	                    '</div>'].join('');
+	            }
+	        }
+	    });
+		</script>
+  	</body>
+</html>
