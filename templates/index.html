@@ -24,17 +24,16 @@
 	            .domain([minValue,maxValue])
 	            .range(["#ffe6e6","#800000"]);
 
-	    series.forEach(function(item){ //
-
+	    series.forEach(function(item){ 
 	        var iso = item[0],
 	        	value = item[1];
-	        dataset[iso] = { total: value, fillColor: paletteScale(value) };
+	        	projects = item[2];
+	        dataset[iso] = { total: value, projects: projects, fillColor: paletteScale(value) };
 	    });
 
 	    new Datamap({
 	       	element: document.getElementById('container_map'),
 	        projection: 'mercator',
-
 	        fills: { defaultFill: '#F5F5F5' },
 	        data: dataset,
 	        geographyConfig: {
@@ -44,17 +43,28 @@
 	            highlightFillColor: function(geo) {
 	                return geo['fillColor'] || '#F5F5F5';
 	            },
-
 	            highlightBorderColor: '#B7B7B7',
 
 	            popupTemplate: function(geo, data) {
 
 	                if (!data) { return ; }
 
-	                return ['<div class="hoverinfo">',
-	                    '<strong>', geo.properties.name, '</strong>',
-	                    '<br>Total investments: ', data.total.toLocaleString(),
-	                    '</div>'].join('');
+	                var output = '<div class="hoverinfo">' +
+	                	'<strong>' + geo.properties.name + '</strong>' +
+	                	'<br>' +
+	                	'<strong>' + 'Projects:' + '</strong>' +
+	                	'<br>';
+
+	                data.projects.forEach(function (project) {
+	                	output += '<ul>';
+	                	output += '<li>' + project[0] + ': ' + project[1].toLocaleString() + '</li>';
+	                	output += '</ul>';
+	                });
+	                	
+	                output += '<br><strong>Total investments:</strong> ' + data.total.toLocaleString() +
+	                	'</div>';
+
+	                return output;
 	            }
 	        }
 	    });

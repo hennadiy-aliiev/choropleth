@@ -14,8 +14,21 @@ def index():
     total_sum = mongo.db.code.aggregate( [
         { '$group' : { '_id' : { 'countrycode': '$countrycode'}, 'totalSum': { '$sum': '$lendprojectcost'}}}
     ] )
-    
     countries_invest = [[item['_id']['countrycode'], item['totalSum']] for item in total_sum]
+
+    projects = mongo.db.code.find( {}, { '_id': 0, 'countrycode': 1, 'project_name': 1, 'lendprojectcost': 1 } )
+    countries_projects = {}
+    # sorting projects; one country has many projects; example: {'UA':[[project_name1:lendprojectcost1],[project_name2:lendprojectcost2]]...}
+    for project in projects:
+        if project['countrycode'] in countries_projects.keys():
+            countries_projects[project['countrycode']].append([project['project_name'], project['lendprojectcost']])
+        else:
+            countries_projects[project['countrycode']] = [[project['project_name'], project['lendprojectcost']]]
+
+    # adding all projects to a country accordingly; example: ['UA', 573500000, [[project_name1:lendprojectcost1],[project_name2:lendprojectcost2]]...]
+    for i in range(len(countries_invest)):
+        countries_invest[i].append(countries_projects[countries_invest[i][0]])
+    
     
     iso_alpha_2to3 = {"BD": "BGD", "BE": "BEL", "BF": "BFA", "BG": "BGR", "BA": "BIH", 
                     "BB": "BRB", "WF": "WLF", "BL": "BLM", "BM": "BMU", "BN": "BRN", 
